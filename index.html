@@ -29,11 +29,11 @@ body {
 .app-header {
   background: linear-gradient(120deg, #0d47a1 0%, #1565c0 40%, #1e88e5 100%);
   color: #fff;
-  padding: 0 14px;
-  height: 54px;
+  padding: 0 12px;
+  height: 44px;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 10px;
   flex-shrink: 0;
   box-shadow: 0 3px 12px rgba(13, 71, 161, 0.45);
   z-index: 10;
@@ -178,28 +178,54 @@ body {
   background: #fff;
   border-right: 1px solid #cdd7e8;
   overflow: hidden;
-  transition: border-top-color 0.25s;
 }
 
-/* Active device indicator */
+/* Active device strip inside rubric header */
 .rubric-panel-inner {
-  border-top: 3px solid var(--active-color, #1565c0);
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Active device label row */
+.rubric-device-strip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  background: var(--active-color, #1565c0);
+  flex-shrink: 0;
+}
+.rds-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.75);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.rds-name {
+  font-size: 12px;
+  font-weight: 900;
+  color: #fff;
+}
+.rds-hint {
+  font-size: 9px;
+  color: rgba(255,255,255,0.6);
+  margin-left: auto;
 }
 
 /* Level column headers */
 .rubric-head {
   display: grid;
-  grid-template-columns: 78px repeat(4, 1fr);
+  grid-template-columns: 72px repeat(4, 1fr);
   background: #f4f7fb;
   border-bottom: 2px solid #cdd7e8;
   flex-shrink: 0;
 }
 
 .rh-label {
-  padding: 8px 10px;
+  padding: 5px 8px;
   font-size: 10px;
   color: #8899aa;
   font-weight: 500;
@@ -209,7 +235,7 @@ body {
 }
 
 .level-col-header {
-  padding: 6px 6px 7px;
+  padding: 4px 4px 5px;
   text-align: center;
   border-right: 1px solid #dde5ef;
 }
@@ -217,13 +243,13 @@ body {
 
 .lch-name {
   display: block;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   margin-bottom: 1px;
 }
 .lch-pts {
   display: block;
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 900;
   line-height: 1;
 }
@@ -243,6 +269,9 @@ body {
 /* Criterion rows */
 .rubric-body {
   flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: thin;
@@ -251,9 +280,10 @@ body {
 
 .criterion-row {
   display: grid;
-  grid-template-columns: 78px repeat(4, 1fr);
+  grid-template-columns: 72px repeat(4, 1fr);
   border-bottom: 1px solid #edf1f8;
-  min-height: 88px;
+  flex: 1;
+  min-height: 68px;
 }
 .criterion-row:last-child { border-bottom: none; }
 
@@ -264,8 +294,8 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 8px 6px;
-  gap: 4px;
+  padding: 6px 4px;
+  gap: 3px;
   text-align: center;
 }
 .crit-icon { font-size: 18px; line-height: 1; }
@@ -284,7 +314,7 @@ body {
 
 /* Level cells */
 .level-cell {
-  padding: 8px 7px;
+  padding: 6px 6px;
   cursor: pointer;
   border-right: 1px solid #edf1f8;
   border-left: 3px solid transparent;
@@ -292,10 +322,11 @@ body {
   transition: background 0.12s, border-left-color 0.12s;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 4px;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
   position: relative;
+  overflow: hidden;
 }
 .level-cell:last-child { border-right: none; }
 .level-cell:hover { background: #f5f8fc; }
@@ -354,14 +385,17 @@ body {
   display: flex;
   flex-direction: column;
   background: #f4f7fb;
-  padding: 12px;
-  gap: 10px;
+  padding: 8px 10px;
+  gap: 7px;
   overflow: hidden;
 }
 
 .chart-header {
   flex-shrink: 0;
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
 }
 .chart-title {
   font-size: 11px;
@@ -369,6 +403,37 @@ body {
   color: #7a90ab;
   text-transform: uppercase;
   letter-spacing: 0.12em;
+}
+.btn-yt {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 14px;
+  background: #ff0000;
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-decoration: none;
+  font-family: inherit;
+  letter-spacing: 0.03em;
+  transition: opacity 0.15s, transform 0.1s;
+  box-shadow: 0 2px 6px rgba(255,0,0,0.3);
+}
+.btn-yt:hover { opacity: 0.88; transform: translateY(-1px); }
+.btn-yt:active { transform: translateY(0); }
+.yt-icon { font-size: 12px; }
+
+/* ===== FOOTER ===== */
+.app-footer {
+  background: #0a3880;
+  color: rgba(255,255,255,0.42);
+  font-size: 9px;
+  text-align: right;
+  padding: 3px 14px;
+  flex-shrink: 0;
+  letter-spacing: 0.07em;
+  font-family: 'Courier New', monospace;
 }
 
 .chart-wrap {
@@ -382,16 +447,16 @@ body {
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .score-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 7px 10px;
+  gap: 6px;
+  padding: 5px 8px;
   background: #fff;
-  border-radius: 10px;
+  border-radius: 8px;
   border-left: 4px solid var(--dc);
   box-shadow: 0 1px 4px rgba(0,0,0,0.07);
 }
@@ -461,31 +526,35 @@ body {
   .app { height: auto; min-height: 100dvh; }
   .main { flex-direction: column; overflow: visible; }
   .rubric-panel { flex: none; border-right: none; border-bottom: 2px solid #cdd7e8; }
-  .chart-panel { flex: none; min-height: 420px; }
+  .rubric-panel-inner { flex: none; }
+  .rubric-body { flex: none; min-height: 0; overflow-y: visible; }
+  .criterion-row { flex: none; min-height: 82px; }
+  .chart-panel { flex: none; min-height: 400px; }
 }
 
 @media (max-width: 640px) {
-  .app-header { height: auto; padding: 8px 10px; flex-wrap: wrap; gap: 8px; }
-  .app-title { font-size: 14px; }
+  .app-header { height: auto; padding: 7px 10px; flex-wrap: wrap; gap: 7px; }
+  .app-title { font-size: 13px; }
   .header-actions { order: 3; }
 
   .rubric-head,
   .criterion-row {
-    grid-template-columns: 56px repeat(4, 1fr);
+    grid-template-columns: 52px repeat(4, 1fr);
   }
-  .crit-label { padding: 6px 4px; }
-  .crit-icon { font-size: 15px; }
+  .crit-label { padding: 5px 3px; }
+  .crit-icon { font-size: 14px; }
   .crit-name { font-size: 9px; }
   .crit-sub { display: none; }
 
-  .level-cell { padding: 6px 4px; }
+  .level-cell { padding: 5px 4px; }
   .lc-desc { display: none; }
-  .lc-check { width: 14px; height: 14px; font-size: 9px; }
-  .lch-pts { font-size: 17px; }
-  .lch-name { font-size: 10px; }
+  .lc-check { width: 13px; height: 13px; font-size: 9px; }
+  .lch-pts { font-size: 15px; }
+  .lch-name { font-size: 9px; }
 
   .sr-cells { gap: 2px; }
   .sr-cell { min-width: 18px; }
+  .chart-panel { min-height: 340px; }
 }
 </style>
 </head>
@@ -493,7 +562,7 @@ body {
 <div class="app" id="app">
   <header class="app-header">
     <div class="app-title">
-      <small>SETAGOYA GOLBERG</small>
+      <small>SGS GOLBERG</small>
       ルーブリック評価
     </div>
     <div class="device-tabs" id="deviceTabs"></div>
@@ -505,6 +574,11 @@ body {
   <div class="main">
     <section class="rubric-panel" id="rubricPanel">
       <div class="rubric-panel-inner" id="rubricPanelInner">
+        <div class="rubric-device-strip" id="rubricDeviceStrip">
+          <span class="rds-label">評価中：</span>
+          <span class="rds-name" id="rubricDeviceName">装置１</span>
+          <span class="rds-hint">タップしてスコアを選択</span>
+        </div>
         <div class="rubric-head">
           <div class="rh-label">観点</div>
           <div class="level-col-header">
@@ -531,6 +605,11 @@ body {
     <section class="chart-panel">
       <div class="chart-header">
         <div class="chart-title">装置評価レーダーチャート</div>
+        <a class="btn-yt"
+           href="https://www.youtube.com/results?search_query=%E4%B8%96%E7%94%B0%E8%B0%B7%E5%AD%A6%E5%9C%92+%E3%82%BB%E3%82%BF%E3%82%B4%E3%83%A9+%E8%A3%85%E7%BD%AE%E8%A7%A3%E8%AA%AC"
+           target="_blank" rel="noopener noreferrer">
+          <span class="yt-icon">▶</span> 物理部 装置紹介動画
+        </a>
       </div>
       <div class="chart-wrap">
         <canvas id="radarChart"></canvas>
@@ -538,6 +617,9 @@ body {
       <div class="score-summary" id="scoreSummary"></div>
     </section>
   </div>
+  <footer class="app-footer">
+    © SETAGAYAGAKUEN SCHOOL / Koyo Ito. All rights reserved.
+  </footer>
 </div>
 
 <script>
@@ -635,10 +717,6 @@ function toRgba(hex, a) {
   return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;
 }
 
-function getScore(device, critId) {
-  return device.scores[critId] !== undefined ? device.scores[critId] : null;
-}
-
 function totalScore(device) {
   return CRITERIA.reduce((s, c) => s + (device.scores[c.id] ?? 0), 0);
 }
@@ -717,8 +795,10 @@ function renderTabs() {
 /* ========== RUBRIC ========== */
 function renderRubric() {
   const dev = devices[activeIdx];
-  // Update active color indicator
-  document.getElementById('rubricPanelInner').style.setProperty('--active-color', dev.color);
+  // Update device strip
+  const strip = document.getElementById('rubricDeviceStrip');
+  strip.style.setProperty('--active-color', dev.color);
+  document.getElementById('rubricDeviceName').textContent = dev.name;
 
   const body = document.getElementById('rubricBody');
   body.innerHTML = CRITERIA.map(crit => {
