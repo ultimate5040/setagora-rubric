@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>セタゴラ ルーブリック評価</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+/* ===== RESET ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { height: 100%; }
+body {
+  font-family: 'Noto Sans JP', 'Hiragino Sans', 'YuGothic', sans-serif;
+  background: #dde8f4;
+  color: #1a2a3a;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+/* ===== APP SHELL ===== */
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+}
+
+/* ===== HEADER ===== */
+.app-header {
+  background: linear-gradient(120deg, #0d47a1 0%, #1565c0 40%, #1e88e5 100%);
+  color: #fff;
+  padding: 0 14px;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+  box-shadow: 0 3px 12px rgba(13, 71, 161, 0.45);
+  z-index: 10;
+}
+
+.app-title {
+  font-weight: 900;
+  font-size: 15px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  flex-shrink: 0;
+  line-height: 1.1;
+}
+.app-title small {
+  display: block;
+  font-size: 9px;
+  font-weight: 400;
+  opacity: 0.75;
+  letter-spacing: 0.15em;
+}
+
+/* ===== DEVICE TABS ===== */
+.device-tabs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.device-tabs::-webkit-scrollbar { display: none; }
+
+.device-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px 5px 8px;
+  border-radius: 20px;
+  border: 1.5px solid rgba(255,255,255,0.35);
+  background: rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.82);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.device-tab:hover { background: rgba(255,255,255,0.22); color: #fff; }
+.device-tab.active {
+  background: #fff;
+  color: #0d47a1;
+  font-weight: 700;
+  border-color: #fff;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+.tab-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.tab-name {
+  outline: none;
+  min-width: 36px;
+  max-width: 90px;
+  cursor: text;
+}
+.tab-name[contenteditable="true"] {
+  border-bottom: 1.5px dashed currentColor;
+}
+
+.tab-remove {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 13px;
+  opacity: 0.55;
+  padding: 0;
+  line-height: 1;
+  transition: opacity 0.1s;
+  flex-shrink: 0;
+}
+.tab-remove:hover { opacity: 1; }
+
+.btn-add {
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1.5px dashed rgba(255,255,255,0.5);
+  background: transparent;
+  color: rgba(255,255,255,0.8);
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-add:hover { background: rgba(255,255,255,0.15); color: #fff; border-color: #fff; }
+
+/* ===== HEADER RIGHT ACTIONS ===== */
+.header-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.btn-reset {
+  padding: 5px 11px;
+  border-radius: 16px;
+  border: 1.5px solid rgba(255,255,255,0.4);
+  background: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.85);
+  font-family: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-reset:hover { background: rgba(255,255,255,0.22); color: #fff; }
+
+/* ===== MAIN CONTENT ===== */
+.main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ===== RUBRIC PANEL ===== */
+.rubric-panel {
+  flex: 0 0 60%;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-right: 1px solid #cdd7e8;
+  overflow: hidden;
+  transition: border-top-color 0.25s;
+}
+
+/* Active device indicator */
+.rubric-panel-inner {
+  border-top: 3px solid var(--active-color, #1565c0);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Level column headers */
+.rubric-head {
+  display: grid;
+  grid-template-columns: 78px repeat(4, 1fr);
+  background: #f4f7fb;
+  border-bottom: 2px solid #cdd7e8;
+  flex-shrink: 0;
+}
+
+.rh-label {
+  padding: 8px 10px;
+  font-size: 10px;
+  color: #8899aa;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  border-right: 1px solid #dde5ef;
+}
+
+.level-col-header {
+  padding: 6px 6px 7px;
+  text-align: center;
+  border-right: 1px solid #dde5ef;
+}
+.level-col-header:last-child { border-right: none; }
+
+.lch-name {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  margin-bottom: 1px;
+}
+.lch-pts {
+  display: block;
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1;
+}
+.lch-unit {
+  font-size: 9px;
+  font-weight: 400;
+  color: #8899aa;
+  margin-left: 1px;
+}
+
+/* Level color coding */
+.lvl-0 { color: #c62828; }
+.lvl-1 { color: #e65100; }
+.lvl-2 { color: #1565c0; }
+.lvl-3 { color: #2e7d32; }
+
+/* Criterion rows */
+.rubric-body {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #b0bec5 transparent;
+}
+
+.criterion-row {
+  display: grid;
+  grid-template-columns: 78px repeat(4, 1fr);
+  border-bottom: 1px solid #edf1f8;
+  min-height: 88px;
+}
+.criterion-row:last-child { border-bottom: none; }
+
+.crit-label {
+  background: #f8fafd;
+  border-right: 1px solid #dde5ef;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 6px;
+  gap: 4px;
+  text-align: center;
+}
+.crit-icon { font-size: 18px; line-height: 1; }
+.crit-name {
+  font-size: 10px;
+  font-weight: 700;
+  color: #334155;
+  line-height: 1.25;
+  word-break: break-all;
+}
+.crit-sub {
+  font-size: 8.5px;
+  color: #8899aa;
+  line-height: 1.2;
+}
+
+/* Level cells */
+.level-cell {
+  padding: 8px 7px;
+  cursor: pointer;
+  border-right: 1px solid #edf1f8;
+  border-left: 3px solid transparent;
+  background: #fff;
+  transition: background 0.12s, border-left-color 0.12s;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  position: relative;
+}
+.level-cell:last-child { border-right: none; }
+.level-cell:hover { background: #f5f8fc; }
+
+.level-cell.selected {
+  border-left-color: var(--sc, #1565c0);
+  /* background set inline */
+}
+
+.lc-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.lc-badge {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 8px;
+  background: #edf1f8;
+  color: #5577aa;
+  white-space: nowrap;
+}
+
+.lc-check {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1.5px solid #cdd7e8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 10px;
+  transition: all 0.12s;
+  color: transparent;
+}
+
+.level-cell.selected .lc-check {
+  border-color: var(--sc, #1565c0);
+  background: var(--sc, #1565c0);
+  color: #fff;
+}
+
+.lc-desc {
+  font-size: 10px;
+  line-height: 1.45;
+  color: #4a5568;
+}
+
+/* ===== CHART PANEL ===== */
+.chart-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #f4f7fb;
+  padding: 12px;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.chart-header {
+  flex-shrink: 0;
+  text-align: center;
+}
+.chart-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #7a90ab;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.chart-wrap {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+
+/* ===== SCORE SUMMARY ===== */
+.score-summary {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.score-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  background: #fff;
+  border-radius: 10px;
+  border-left: 4px solid var(--dc);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+}
+
+.sr-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--dc);
+  flex-shrink: 0;
+}
+
+.sr-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: #334;
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sr-cells {
+  display: flex;
+  gap: 4px;
+}
+
+.sr-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 22px;
+}
+.sr-cell-k {
+  font-size: 8px;
+  color: #99a;
+  line-height: 1;
+}
+.sr-cell-v {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.sr-cell-v.scored { color: var(--dc); }
+.sr-cell-v.blank { color: #bbc; }
+
+.sr-total {
+  text-align: right;
+  min-width: 46px;
+}
+.sr-total-num {
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--dc);
+  line-height: 1;
+}
+.sr-total-denom {
+  font-size: 9px;
+  color: #99a;
+  font-weight: 400;
+}
+
+/* ===== MOBILE / RESPONSIVE ===== */
+@media (max-width: 1023px) {
+  body { overflow: auto; height: auto; }
+  .app { height: auto; min-height: 100dvh; }
+  .main { flex-direction: column; overflow: visible; }
+  .rubric-panel { flex: none; border-right: none; border-bottom: 2px solid #cdd7e8; }
+  .chart-panel { flex: none; min-height: 420px; }
+}
+
+@media (max-width: 640px) {
+  .app-header { height: auto; padding: 8px 10px; flex-wrap: wrap; gap: 8px; }
+  .app-title { font-size: 14px; }
+  .header-actions { order: 3; }
+
+  .rubric-head,
+  .criterion-row {
+    grid-template-columns: 56px repeat(4, 1fr);
+  }
+  .crit-label { padding: 6px 4px; }
+  .crit-icon { font-size: 15px; }
+  .crit-name { font-size: 9px; }
+  .crit-sub { display: none; }
+
+  .level-cell { padding: 6px 4px; }
+  .lc-desc { display: none; }
+  .lc-check { width: 14px; height: 14px; font-size: 9px; }
+  .lch-pts { font-size: 17px; }
+  .lch-name { font-size: 10px; }
+
+  .sr-cells { gap: 2px; }
+  .sr-cell { min-width: 18px; }
+}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <header class="app-header">
+    <div class="app-title">
+      <small>SETAGOYA GOLBERG</small>
+      ルーブリック評価
+    </div>
+    <div class="device-tabs" id="deviceTabs"></div>
+    <div class="header-actions">
+      <button class="btn-reset" id="btnReset" title="現在の装置をリセット">リセット</button>
+    </div>
+  </header>
+
+  <div class="main">
+    <section class="rubric-panel" id="rubricPanel">
+      <div class="rubric-panel-inner" id="rubricPanelInner">
+        <div class="rubric-head">
+          <div class="rh-label">観点</div>
+          <div class="level-col-header">
+            <span class="lch-name lvl-0">残念</span>
+            <span class="lch-pts lvl-0">0<span class="lch-unit">点</span></span>
+          </div>
+          <div class="level-col-header">
+            <span class="lch-name lvl-1">悪くない</span>
+            <span class="lch-pts lvl-1">1<span class="lch-unit">点</span></span>
+          </div>
+          <div class="level-col-header">
+            <span class="lch-name lvl-2">良い</span>
+            <span class="lch-pts lvl-2">2<span class="lch-unit">点</span></span>
+          </div>
+          <div class="level-col-header">
+            <span class="lch-name lvl-3">素晴らしい</span>
+            <span class="lch-pts lvl-3">3<span class="lch-unit">点</span></span>
+          </div>
+        </div>
+        <div class="rubric-body" id="rubricBody"></div>
+      </div>
+    </section>
+
+    <section class="chart-panel">
+      <div class="chart-header">
+        <div class="chart-title">装置評価レーダーチャート</div>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="radarChart"></canvas>
+      </div>
+      <div class="score-summary" id="scoreSummary"></div>
+    </section>
+  </div>
+</div>
+
+<script>
+/* ========== DATA ========== */
+const CRITERIA = [
+  {
+    id: 'physics', name: '物理学', icon: '⚙️', sub: '',
+    levels: [
+      '物理学的に説明がつかず面白くない。',
+      '物理学的に説明できるものの面白味に欠ける。',
+      '物理学的に説明ができ、面白い。',
+      '物理法則が分かりやすく取り入れられている。'
+    ]
+  },
+  {
+    id: 'appearance', name: '見栄え', icon: '✨', sub: '',
+    levels: [
+      '工作感が強く、見た目が汚い。',
+      'きれいに仕上がっているものの、色や形に統一感がない。',
+      '色や形に統一感があり、見た目が美しい。',
+      '世界観に統一感があり、美しい。動画にしたときに映える。'
+    ]
+  },
+  {
+    id: 'movement', name: '動き', icon: '🌀', sub: '',
+    levels: [
+      '目で動きを追えない。動きが見づらい。',
+      '動きが迫力や面白味に欠ける。',
+      '動きが分かりやすく、迫力や面白味がある。',
+      '繰り返しの動きや、興味深い動きで観客を魅了できる。'
+    ]
+  },
+  {
+    id: 'energy', name: 'エネルギー', icon: '⚡', sub: '(高さや勢い)',
+    levels: [
+      'エネルギーの損失が大きく、次の装置につなげにくい。',
+      'エネルギーの損失はあるものの、次の装置には影響が少ない。',
+      'エネルギーの損失が少なく、装置として組み込みやすい。',
+      '位置エネルギー（高さ）や運動エネルギー（勢い）を増すことができる。'
+    ]
+  },
+  {
+    id: 'sdgs', name: 'SDGs', icon: '♻️', sub: '',
+    levels: [
+      '装置を作ることで環境に負荷がかかっている。',
+      'あまり見ない材料で構成されている。',
+      '身近な素材や道具で構成されている。',
+      '生活で出る身近な廃材などで構成されている。再利用ができる。'
+    ]
+  }
+];
+
+const PALETTE = ['#1e88e5','#e91e8c','#ff6d00','#43a047','#8e24aa','#00acc1'];
+const MAX_SCORE = CRITERIA.length * 3; // 15
+
+/* ========== STATE ========== */
+let devices, activeIdx, deviceCounter;
+
+function defaultState() {
+  return {
+    devices: [
+      { id: 0, name: '装置１', color: PALETTE[0], scores: {} },
+      { id: 1, name: '装置２', color: PALETTE[1], scores: {} }
+    ],
+    activeIdx: 0,
+    deviceCounter: 2
+  };
+}
+
+function loadState() {
+  try {
+    const s = JSON.parse(localStorage.getItem('setagora_v2'));
+    if (s && s.devices && s.devices.length) {
+      devices = s.devices;
+      activeIdx = Math.min(s.activeIdx, s.devices.length - 1);
+      deviceCounter = s.deviceCounter || s.devices.length;
+      return;
+    }
+  } catch(_) {}
+  const d = defaultState();
+  devices = d.devices;
+  activeIdx = d.activeIdx;
+  deviceCounter = d.deviceCounter;
+}
+
+function saveState() {
+  try {
+    localStorage.setItem('setagora_v2', JSON.stringify({ devices, activeIdx, deviceCounter }));
+  } catch(_) {}
+}
+
+/* ========== HELPERS ========== */
+function toRgba(hex, a) {
+  const n = parseInt(hex.replace('#',''), 16);
+  return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;
+}
+
+function getScore(device, critId) {
+  return device.scores[critId] !== undefined ? device.scores[critId] : null;
+}
+
+function totalScore(device) {
+  return CRITERIA.reduce((s, c) => s + (device.scores[c.id] ?? 0), 0);
+}
+
+/* ========== TABS ========== */
+function renderTabs() {
+  const el = document.getElementById('deviceTabs');
+  el.innerHTML = '';
+
+  devices.forEach((dev, idx) => {
+    const tab = document.createElement('button');
+    tab.className = 'device-tab' + (idx === activeIdx ? ' active' : '');
+    tab.innerHTML = `
+      <span class="tab-dot" style="background:${dev.color}"></span>
+      <span class="tab-name" contenteditable="${idx === activeIdx ? 'true' : 'false'}" spellcheck="false">${escHtml(dev.name)}</span>
+      ${devices.length > 1 ? `<span class="tab-remove" data-idx="${idx}" role="button" title="削除">×</span>` : ''}
+    `;
+
+    tab.addEventListener('click', e => {
+      if (e.target.classList.contains('tab-remove')) return;
+      if (e.target.classList.contains('tab-name') && idx === activeIdx) return;
+      activeIdx = idx;
+      saveState();
+      renderTabs();
+      renderRubric();
+      updateSummary();
+    });
+
+    const nameEl = tab.querySelector('.tab-name');
+    nameEl.addEventListener('blur', () => {
+      const v = nameEl.textContent.trim();
+      devices[idx].name = v || `装置${idx+1}`;
+      saveState();
+      updateChart();
+      updateSummary();
+    });
+    nameEl.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); nameEl.blur(); }
+    });
+
+    tab.querySelectorAll('.tab-remove').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        devices.splice(parseInt(btn.dataset.idx), 1);
+        activeIdx = Math.min(activeIdx, devices.length - 1);
+        saveState();
+        renderTabs();
+        renderRubric();
+        updateChart();
+        updateSummary();
+      });
+    });
+
+    el.appendChild(tab);
+  });
+
+  if (devices.length < 6) {
+    const add = document.createElement('button');
+    add.className = 'btn-add';
+    add.textContent = '＋ 装置を追加';
+    add.addEventListener('click', () => {
+      const color = PALETTE[deviceCounter % PALETTE.length];
+      devices.push({ id: deviceCounter, name: `装置${deviceCounter+1}`, color, scores: {} });
+      activeIdx = devices.length - 1;
+      deviceCounter++;
+      saveState();
+      renderTabs();
+      renderRubric();
+      updateChart();
+      updateSummary();
+    });
+    el.appendChild(add);
+  }
+}
+
+/* ========== RUBRIC ========== */
+function renderRubric() {
+  const dev = devices[activeIdx];
+  // Update active color indicator
+  document.getElementById('rubricPanelInner').style.setProperty('--active-color', dev.color);
+
+  const body = document.getElementById('rubricBody');
+  body.innerHTML = CRITERIA.map(crit => {
+    return `<div class="criterion-row">
+      <div class="crit-label">
+        <span class="crit-icon">${crit.icon}</span>
+        <span class="crit-name">${escHtml(crit.name)}</span>
+        ${crit.sub ? `<span class="crit-sub">${escHtml(crit.sub)}</span>` : ''}
+      </div>
+      ${[0,1,2,3].map(lv => {
+        const sel = dev.scores[crit.id] === lv;
+        const bg = sel ? `background:${toRgba(dev.color, 0.09)};` : '';
+        const border = sel ? `--sc:${dev.color};` : '';
+        return `<div class="level-cell${sel ? ' selected' : ''}" 
+                  data-c="${crit.id}" data-l="${lv}"
+                  style="${bg}${border}">
+          <div class="lc-top">
+            <span class="lc-badge">${lv}点</span>
+            <span class="lc-check">${sel ? '✓' : ''}</span>
+          </div>
+          <div class="lc-desc">${escHtml(crit.levels[lv])}</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }).join('');
+
+  body.querySelectorAll('.level-cell').forEach(cell => {
+    cell.addEventListener('click', () => {
+      const crit = cell.dataset.c;
+      const lv = parseInt(cell.dataset.l);
+      const dev = devices[activeIdx];
+      if (dev.scores[crit] === lv) {
+        delete dev.scores[crit];
+      } else {
+        dev.scores[crit] = lv;
+      }
+      saveState();
+      renderRubric();
+      updateChart();
+      updateSummary();
+    });
+  });
+}
+
+/* ========== CHART ========== */
+let chart = null;
+
+function initChart() {
+  const ctx = document.getElementById('radarChart').getContext('2d');
+  chart = new Chart(ctx, {
+    type: 'radar',
+    data: {
+      labels: CRITERIA.map(c => c.name),
+      datasets: []
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 250 },
+      scales: {
+        r: {
+          min: 0,
+          max: 3,
+          ticks: {
+            stepSize: 1,
+            font: { family: "'Noto Sans JP', sans-serif", size: 10 },
+            backdropColor: 'transparent',
+            color: '#8899aa'
+          },
+          grid: { color: '#cdd7e8', lineWidth: 1 },
+          angleLines: { color: '#cdd7e8', lineWidth: 1 },
+          pointLabels: {
+            font: { family: "'Noto Sans JP', sans-serif", size: 12, weight: '700' },
+            color: '#334155'
+          }
+        }
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => `${ctx.dataset.label}：${ctx.raw}点`
+          }
+        }
+      }
+    }
+  });
+}
+
+function updateChart() {
+  if (!chart) return;
+  chart.data.datasets = devices.map(dev => ({
+    label: dev.name,
+    data: CRITERIA.map(c => dev.scores[c.id] ?? 0),
+    backgroundColor: toRgba(dev.color, 0.1),
+    borderColor: dev.color,
+    borderWidth: 2.5,
+    pointBackgroundColor: dev.color,
+    pointBorderColor: '#fff',
+    pointBorderWidth: 1.5,
+    pointRadius: 5,
+    pointHoverRadius: 7
+  }));
+  chart.update('none');
+}
+
+/* ========== SUMMARY ========== */
+function updateSummary() {
+  const el = document.getElementById('scoreSummary');
+  el.innerHTML = devices.map(dev => {
+    const total = totalScore(dev);
+    return `<div class="score-row" style="--dc:${dev.color}">
+      <div class="sr-dot"></div>
+      <div class="sr-name">${escHtml(dev.name)}</div>
+      <div class="sr-cells">
+        ${CRITERIA.map(c => {
+          const v = dev.scores[c.id];
+          const cls = v !== undefined ? 'scored' : 'blank';
+          return `<div class="sr-cell">
+            <div class="sr-cell-k">${c.name.slice(0,2)}</div>
+            <div class="sr-cell-v ${cls}">${v !== undefined ? v : '–'}</div>
+          </div>`;
+        }).join('')}
+      </div>
+      <div class="sr-total">
+        <div class="sr-total-num">${total}</div>
+        <div class="sr-total-denom">/${MAX_SCORE}点</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ========== RESET ========== */
+document.getElementById('btnReset').addEventListener('click', () => {
+  if (!confirm(`「${devices[activeIdx].name}」のスコアをリセットしますか？`)) return;
+  devices[activeIdx].scores = {};
+  saveState();
+  renderRubric();
+  updateChart();
+  updateSummary();
+});
+
+/* ========== BOOT ========== */
+loadState();
+renderTabs();
+renderRubric();
+initChart();
+updateChart();
+updateSummary();
+</script>
+</body>
+</html>
