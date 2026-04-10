@@ -378,6 +378,10 @@ body {
   line-height: 1.45;
   color: #4a5568;
 }
+.lc-example {
+  font-size: 8.5px;
+  color: #718096;
+}
 
 /* ===== CHART PANEL ===== */
 .chart-panel {
@@ -835,7 +839,7 @@ function renderRubric() {
             <span class="lc-badge">${lv}点</span>
             <span class="lc-check">${sel ? '✓' : ''}</span>
           </div>
-          <div class="lc-desc">${escHtml(crit.levels[lv])}</div>
+          <div class="lc-desc">${formatLevelDesc(crit.levels[lv])}</div>
         </div>`;
       }).join('')}
     </div>`;
@@ -949,6 +953,11 @@ function updateSummary() {
 
 function escHtml(s) {
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function formatLevelDesc(s) {
+  const m = s.match(/^([\s\S]*?)(例[：︰][\s\S]*)$/);
+  if (!m) return escHtml(s);
+  return escHtml(m[1]) + '<br><span class="lc-example">' + escHtml(m[2]) + '</span>';
 }
 
 /* ========== RESET ========== */
